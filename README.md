@@ -31,7 +31,7 @@ Es ermöglicht Mentoren, **Trainees zu verwalten**, **Trainings zu erstellen** u
 ## 📥 **Installation**  
 
 1. **Lade die neueste Version herunter:**  
-   👉 [Download (Setup.exe)](https://github.com/yschaffler/TraineeManagerV2/releases)  
+   👉 [Download (Setup.exe)](https://github.com/yschaffler/TraineeManagerV2/releases/download/TraineeManagerV2/TraineeManager_Setup.exe)  
 2. **Starte den Installer & folge den Anweisungen**  
 3. **Nach der Installation:**  
    - Beim ersten Start den **Trainee-Ordner auswählen**  
