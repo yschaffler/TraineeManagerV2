@@ -1,12 +1,60 @@
 import os
 import json
-from PyQt5.QtWidgets import QFileDialog
+import sys
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 class TraineeManager:
-    CONFIG_FILE = "config.json"
+    CONFIG_DIR = os.path.join(os.getenv("LOCALAPPDATA"), "TraineeManager")  # ✅ Speichert die Datei im Benutzerverzeichnis
+    CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 
     def __init__(self):
+        if not os.path.exists(self.CONFIG_DIR):  # ✅ Falls Verzeichnis nicht existiert, erstellen
+            os.makedirs(self.CONFIG_DIR, exist_ok=True)
         self.trainee_folder = self.load_trainee_folder()
+
+    def load_trainee_folder(self):
+        """Lädt den gespeicherten Trainee-Ordner aus `config.json`. Falls er fehlt oder ungültig ist, fragt das Programm nach einem neuen."""
+        if os.path.exists(self.CONFIG_FILE):
+            try:
+                with open(self.CONFIG_FILE, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+
+                if not content:
+                    return self.ask_for_trainee_folder()
+
+                config = json.loads(content)
+
+                if "trainee_folder" not in config or not os.path.exists(config["trainee_folder"]):
+                    return self.ask_for_trainee_folder()
+
+                return config["trainee_folder"]
+
+            except (json.JSONDecodeError, FileNotFoundError):
+                return self.ask_for_trainee_folder()
+
+        return self.ask_for_trainee_folder()
+
+    def ask_for_trainee_folder(self):
+        """Öffnet einen Dialog, um den Trainee-Ordner auszuwählen, falls `config.json` fehlt oder ungültig ist."""
+        print("🔍 Wähle einen neuen Trainee-Ordner aus.")
+
+        app = QApplication.instance()
+        if not app:
+            app = QApplication(sys.argv)
+
+        folder = QFileDialog.getExistingDirectory(None, "Trainee-Ordner auswählen")
+
+        if folder:
+            self.save_trainee_folder(folder)
+            return folder
+        else:
+            QMessageBox.critical(None, "Fehler", "Kein Trainee-Ordner gewählt. Das Programm wird beendet.")
+            sys.exit(1)
+
+    def save_trainee_folder(self, folder):
+        """Speichert den gewählten Trainee-Ordner in `config.json`."""
+        with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump({"trainee_folder": folder}, f, indent=4, ensure_ascii=False)
 
     def load_trainee_folder(self):
         """Lädt den gespeicherten Trainee-Ordner oder fragt den Nutzer beim ersten Mal."""
@@ -33,10 +81,17 @@ class TraineeManager:
         return os.path.join(self.trainee_folder, trainee_name, training_name)
 
     def get_trainees(self):
-        """Gibt eine Liste aller Trainees zurück (Ordner im Trainee-Verzeichnis)."""
+        """Gibt eine Liste aller Trainee-Ordner zurück. Falls der Pfad ungültig ist, wird der Nutzer aufgefordert, einen neuen zu wählen."""
+        if not os.path.exists(self.trainee_folder):
+            print(f"❌ Fehler: Der Trainee-Ordner '{self.trainee_folder}' wurde nicht gefunden.")
+            self.trainee_folder = self.ask_for_trainee_folder()
+
         if not self.trainee_folder:
-            return []
+            print("❌ Kein Trainee-Ordner gesetzt. Programm wird beendet.")
+            sys.exit(1)
+
         return [f for f in os.listdir(self.trainee_folder) if os.path.isdir(os.path.join(self.trainee_folder, f))]
+
 
     def add_trainee(self, trainee_name):
         """Erstellt einen neuen Trainee-Ordner."""
