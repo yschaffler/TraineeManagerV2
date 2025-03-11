@@ -44,4 +44,4 @@ Es ermöglicht Mentoren, **Trainees zu verwalten**, **Trainings zu erstellen** u
 
 ---
 
-## © 2025 **TraineeManager** – Entwickelt von [yschaffler](https://github.com/yschaffler)  
+## © 2025 **TraineeManager**
